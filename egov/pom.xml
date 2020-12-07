@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.egov.edcr</groupId>
-    <artifactId>egov-erp-edcr-impl</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <artifactId>pondy-edcr-impl</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -72,8 +72,12 @@
 	</pluginRepositories>
 
     <modules>
-        <module>egov-client-impl</module>
-        <module>egov-ear</module>
+ 				<module>egov-egiweb</module>
+				<module>egov-portal</module>
+				<module>egov-portalweb</module>
+        <module>egov-pondy-impl</module>
+				<module>egov-edcrweb</module>
+       	<module>egov-ear</module>
     </modules>
 
     <properties>
@@ -199,6 +203,11 @@
                     <exclusion>
                         <artifactId>commons-logging</artifactId>
                         <groupId>commons-logging</groupId>
+                    </exclusion>
+                    
+                      <exclusion>
+                        <artifactId>egov-egi</artifactId>
+                        <groupId>org.egov.edcr</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
