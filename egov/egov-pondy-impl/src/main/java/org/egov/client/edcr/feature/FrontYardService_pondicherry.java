@@ -340,7 +340,7 @@ public class FrontYardService_pondicherry extends FrontYardService {
 	}
 
 	private Boolean isEwsPlot(Plan pl) {
-		if(pl.getPlanInformation().getPlotArea().compareTo(BigDecimal.valueOf(20l)) <= 0)
+		if(pl.getPlanInformation().getPlotArea().compareTo(BigDecimal.valueOf(100l)) < 0)
 			return true;
 		else return false;
 	}
