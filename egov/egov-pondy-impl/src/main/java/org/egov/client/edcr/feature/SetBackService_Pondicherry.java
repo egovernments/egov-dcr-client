@@ -1,33 +1,30 @@
-package org.egov.client.edcr;
+package org.egov.client.edcr.feature;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.edcr.feature.FeatureProcess;
-import org.egov.edcr.feature.RearYardService;
-import org.egov.edcr.feature.SideYardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SetBackService_pondicherry extends FeatureProcess {
+public class SetBackService_Pondicherry extends FeatureProcess
+{
   @Autowired
-  private FrontYardService_pondicherry frontYardService;
-  
+  private FrontYardService_Pondicherry frontYardService;
   @Autowired
-  private SideYardService sideYardService;
-  
+  private SideYardService_Pondicherry sideYardService;
   @Autowired
-  private RearYardService rearYardService;
+  private RearYardService_Pondicherry rearYardService;
   
   public Plan validate(Plan pl) {
-    HashMap<String, String> errors = new HashMap<>();
+    HashMap<String, String> errors = new HashMap<String, String>();
+    
     BigDecimal heightOfBuilding = BigDecimal.ZERO;
     for (Block block : pl.getBlocks()) {
       heightOfBuilding = block.getBuilding().getBuildingHeight();
@@ -50,7 +47,8 @@ public class SetBackService_pondicherry extends FeatureProcess {
               !pl.getPlanInformation().getNocToAbutSideDesc().equalsIgnoreCase("YES"))
               errors.put("side2yardNodeDefined", getLocaleMessage("msg.error.not.defined", new String[] { " Side Setback 2 of block " + block
                       .getName() + " at level zero " })); 
-          } else if (setback.getLevel().intValue() > 0) {
+          } 
+          else if (setback.getLevel().intValue() > 0) {
             if (setback.getFrontYard() != null && setback.getFrontYard().getHeight() == null)
               errors.put("frontyardnotDefinedHeight", getLocaleMessage("msg.height.notdefined", new String[] { "Front Setback ", block
                       .getName(), setback.getLevel().toString() })); 
@@ -60,10 +58,12 @@ public class SetBackService_pondicherry extends FeatureProcess {
             if (setback.getSideYard1() != null && setback.getSideYard1().getHeight() == null)
               errors.put("side1yardnotDefinedHeight", getLocaleMessage("msg.height.notdefined", new String[] { "Side Setback 1 ", block
                       .getName(), setback.getLevel().toString() })); 
-            if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() == null)
+            if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() == null) {
               errors.put("side2yardnotDefinedHeight", getLocaleMessage("msg.height.notdefined", new String[] { "Side Setback 2 ", block
-                      .getName(), setback.getLevel().toString() })); 
-          } 
+                      .getName(), setback.getLevel().toString() }));
+            }
+          }
+          
           if (setback.getLevel().intValue() > 0 && block.getSetBacks().size() == i) {
             if (setback.getFrontYard() != null && setback.getFrontYard().getHeight() != null && setback
               .getFrontYard().getHeight().compareTo(heightOfBuilding) != 0)
@@ -78,34 +78,32 @@ public class SetBackService_pondicherry extends FeatureProcess {
               errors.put("side1yardDefinedWrongHeight", getLocaleMessage("msg.wrong.height.defined", new String[] { "Side Setback 1 ", block
                       .getName(), setback.getLevel().toString(), heightOfBuilding.toString() })); 
             if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() != null && setback
-              .getSideYard2().getHeight().compareTo(heightOfBuilding) != 0)
+              .getSideYard2().getHeight().compareTo(heightOfBuilding) != 0) {
               errors.put("side2yardDefinedWrongHeight", getLocaleMessage("msg.wrong.height.defined", new String[] { "Side Setback 2 ", block
-                      .getName(), setback.getLevel().toString(), heightOfBuilding.toString() })); 
+                      .getName(), setback.getLevel().toString(), heightOfBuilding.toString() }));
+            }
           } 
         }  
     } 
-    if (errors.size() > 0)
-      pl.addErrors(errors); 
+    if (errors.size() > 0) {
+      pl.addErrors(errors);
+    }
     return pl;
   }
-  
+
   public Plan process(Plan pl) {
     validate(pl);
+    
     BigDecimal depthOfPlot = pl.getPlanInformation().getDepthOfPlot();
-    BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
-    if (roadWidth != null && roadWidth.compareTo(BigDecimal.ZERO) > 0) {
-        this.frontYardService.processFrontYard(pl);
-    }
     if (depthOfPlot != null && depthOfPlot.compareTo(BigDecimal.ZERO) > 0) {
+      this.frontYardService.processFrontYard(pl);
       this.rearYardService.processRearYard(pl);
+      this.sideYardService.processSideYard(pl);
     } 
-    BigDecimal widthOfPlot = pl.getPlanInformation().getWidthOfPlot();
-    if (widthOfPlot != null && widthOfPlot.compareTo(BigDecimal.ZERO) > 0)
-      this.sideYardService.processSideYard(pl); 
     return pl;
   }
-  
-  public Map<String, Date> getAmendments() {
-    return new LinkedHashMap<>();
+
+  public Map<String, Date> getAmendments() { 
+	  return new LinkedHashMap();
   }
 }
