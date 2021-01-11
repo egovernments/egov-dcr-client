@@ -1,4 +1,4 @@
-package org.egov.client.edcr;
+package org.egov.client.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A_AF;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.egov.client.edcr.constants.DxfFileConstants_Pondicherry;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.Occupancy;
@@ -22,7 +23,7 @@ import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FrontYardService_pondicherry extends FrontYardService {
+public class FrontYardService_Pondicherry extends FrontYardService {
   
   private static final BigDecimal FRONTYARDMINIMUM_DISTANCE_NIL = BigDecimal.valueOf(0);
   
@@ -38,16 +39,7 @@ public class FrontYardService_pondicherry extends FrontYardService {
   
   public static final BigDecimal ROAD_WIDTH_TWELVE_POINTTWO = BigDecimal.valueOf(12.2D);
   
-  public static final String BSMT_FRONT_YARD_DESC = "Basement Front Yard";
-  
-  public static final String TAMIL_TOWN = "TAMIL TOWN";
-	public static final String WHITE_TOWN = "WHITE TOWN";
-	public static final String OTHER_AREA = "OTHER AREA";
-	public static final String OUTSIDE_BOULEVARD = "OUTSIDE BOULEVARD";
-	public static final String CRZ1 = "CRZ-I";
-	public static final String CRZ2 = "CRZ-II";
-	public static final String CRZ3 = "CRZ-III";
-  
+  public static final String BSMT_FRONT_YARD_DESC = "Basement Front Yard";  
   
   private class FrontYardResult {
     String rule;
@@ -176,16 +168,16 @@ public class FrontYardService_pondicherry extends FrontYardService {
 			CRZZone=true;
 		} 
 
-	    if (typeOfArea.equalsIgnoreCase(TAMIL_TOWN) || typeOfArea.equalsIgnoreCase(WHITE_TOWN)) {
+	    if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN) || typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)) {
 	    	minVal=FRONTYARDMINIMUM_DISTANCE_NIL;
 	    }
-	    if (typeOfArea.equalsIgnoreCase(OUTSIDE_BOULEVARD)) {
+	    if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 	    	minVal = FRONTYARDMINIMUM_DISTANCE_1;
 	    }
-	    if (typeOfArea.equalsIgnoreCase(OTHER_AREA)) {
+	    if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
 	    	if (CRZZone) {
 				switch (crz) {
-				case CRZ2:
+				case DxfFileConstants_Pondicherry.CRZ2:
 					if (ewsPlot) {
 						minVal = FRONTYARDMINIMUM_DISTANCE_1;
 					} else if (ewsBuilding) {
@@ -214,7 +206,7 @@ public class FrontYardService_pondicherry extends FrontYardService {
 					      }
 					}
 					break;
-				case CRZ3:
+				case DxfFileConstants_Pondicherry.CRZ3:
 					
 					if (ewsPlot) {
 						minVal = FRONTYARDMINIMUM_DISTANCE_1;
