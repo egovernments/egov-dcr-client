@@ -45,7 +45,7 @@
  *  In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
  */
 
-package org.egov.client.edcr;
+package org.egov.client.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.A2;
@@ -94,6 +94,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.egov.client.edcr.constants.DxfFileConstants_Pondicherry;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.FarDetails;
@@ -112,12 +113,12 @@ import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-public class Far_pondicherry extends Far {
+public class Far_Pondicherry extends Far {
 
 	private static final String BUILDING_TYPE = "Building Type";
 	private static final String PLOT_TYPE = "Plot Type";
 
-	private static final Logger LOG = Logger.getLogger(Far_pondicherry.class);
+	private static final Logger LOG = Logger.getLogger(Far_Pondicherry.class);
 
 	private static final String VALIDATION_NEGATIVE_FLOOR_AREA = "msg.error.negative.floorarea.occupancy.floor";
 	private static final String VALIDATION_NEGATIVE_EXISTING_FLOOR_AREA = "msg.error.negative.existing.floorarea.occupancy.floor";
@@ -131,14 +132,6 @@ public class Far_pondicherry extends Far {
 	private static final BigDecimal TWO_TWO = BigDecimal.valueOf(2.2);
 	private static final BigDecimal THREE = BigDecimal.valueOf(3);
 
-	public static final String TAMIL_TOWN = "TAMIL TOWN";
-	public static final String WHITE_TOWN = "WHITE TOWN";
-	public static final String OTHER_AREA = "OTHER AREA";
-	public static final String OUTSIDE_BOULEVARD = "OUTSIDE BOULEVARD";
-	public static final String CRZ1 = "CRZ-I";
-	public static final String CRZ2 = "CRZ-II";
-	public static final String CRZ3 = "CRZ-III";
-	private static final String CRZ_AREA = "CRZ Area";
 	private static final String REGULAR = "Regular";
 
 	public static final String OLD_AREA_ERROR = "road width old area";
@@ -771,21 +764,21 @@ public class Far_pondicherry extends Far {
 			crzType=crz;
 			}
 
-		if (typeOfArea.equalsIgnoreCase(TAMIL_TOWN)) {
+		if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)) {
 			
 			if (CRZZone) {
 				switch (crz) {
-				case CRZ1:
+				case DxfFileConstants_Pondicherry.CRZ1:
 					pl.addError("Not Implemented","No Data for CRZ-I under Tamil Town" );	
 					break;
 
-				case CRZ2:
+				case DxfFileConstants_Pondicherry.CRZ2:
 					isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
 					pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
 					expectedResult = "<=" + ONE_POINTFIVE;
 					ruleDesc=RULE_CRZ_II;
 					break;
-				case CRZ3:
+				case DxfFileConstants_Pondicherry.CRZ3:
 					
 					pl.addError("Not Implemented","No Data for CRZ- III under Tamil Town" );
 					break;
@@ -808,21 +801,21 @@ public class Far_pondicherry extends Far {
 				ruleDesc=RULE_38;
 			}
 		}
-		else if (typeOfArea.equalsIgnoreCase(WHITE_TOWN)) {
+		else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)) {
 			
 			if (CRZZone) {
 				switch (crz) {
-				case CRZ1:
+				case DxfFileConstants_Pondicherry.CRZ1:
 					pl.addError("Not Implemented","No Data for CRZ-I under White Town" );	
 					break;
 
-				case CRZ2:
+				case DxfFileConstants_Pondicherry.CRZ2:
 						isAccepted = far.compareTo(ONE_POINTTWO) <= 0;
 						pl.getFarDetails().setPermissableFar(ONE_POINTTWO.doubleValue());
 						expectedResult = "<=" + ONE_POINTTWO;
 						ruleDesc=RULE_CRZ_II;
 					break;
-				case CRZ3:
+				case DxfFileConstants_Pondicherry.CRZ3:
 					
 					pl.addError("Not Implemented","No Data for CRZ- III under White Town" );
 					break;
@@ -830,21 +823,21 @@ public class Far_pondicherry extends Far {
 				}
 			}
 		}
-		else if (typeOfArea.equalsIgnoreCase(OUTSIDE_BOULEVARD)) {
+		else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 			
 			if (CRZZone) {
 				switch (crz) {
-				case CRZ1:
+				case DxfFileConstants_Pondicherry.CRZ1:
 					pl.addError("Not Implemented","No Data for CRZ-I under Tamil Town" );	
 					break;
 
-				case CRZ2:
+				case DxfFileConstants_Pondicherry.CRZ2:
 					isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
 					pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
 					expectedResult = "<=" + ONE_POINTFIVE;
 					ruleDesc=RULE_CRZ_II;
 					break;
-				case CRZ3:
+				case DxfFileConstants_Pondicherry.CRZ3:
 					
 					isAccepted = far.compareTo(TWO_TWO) <= 0;
 					pl.getFarDetails().setPermissableFar(TWO_TWO.doubleValue());
@@ -860,21 +853,21 @@ public class Far_pondicherry extends Far {
 				ruleDesc=RULE_38;
 			}
 		}
-		else if (typeOfArea.equalsIgnoreCase(OTHER_AREA)) {
+		else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
 			
 			if (CRZZone) {
 				switch (crz) {
-				case CRZ1:
+				case DxfFileConstants_Pondicherry.CRZ1:
 					pl.addError("Not Implemented","No Data for CRZ-I under Tamil Town" );	
 					break;
 
-				case CRZ2:
+				case DxfFileConstants_Pondicherry.CRZ2:
 					isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
 					pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
 					expectedResult = "<=" + ONE_POINTFIVE;
 					ruleDesc=RULE_CRZ_II;
 					break;
-				case CRZ3:
+				case DxfFileConstants_Pondicherry.CRZ3:
 					
 					isAccepted = far.compareTo(TWO_TWO) <= 0;
 					pl.getFarDetails().setPermissableFar(TWO_TWO.doubleValue());
@@ -921,7 +914,7 @@ public class Far_pondicherry extends Far {
 		scrutinyDetail.addColumnHeading(3, AREA_TYPE);
 		scrutinyDetail.addColumnHeading(4, PLOT_TYPE);
 		scrutinyDetail.addColumnHeading(5, BUILDING_TYPE);
-		scrutinyDetail.addColumnHeading(6, CRZ_AREA);
+		scrutinyDetail.addColumnHeading(6, DxfFileConstants_Pondicherry.CRZ_AREA);
 		scrutinyDetail.addColumnHeading(7, PERMISSIBLE);
 		scrutinyDetail.addColumnHeading(8, PROVIDED);
 		scrutinyDetail.addColumnHeading(9, STATUS);
@@ -940,7 +933,7 @@ public class Far_pondicherry extends Far {
 		details.put(AREA_TYPE, typeOfArea);
 		details.put(PLOT_TYPE, plotType.toString());
 		details.put(BUILDING_TYPE, buildingType.toString());
-		details.put(CRZ_AREA, crzArea.toString());
+		details.put(DxfFileConstants_Pondicherry.CRZ_AREA, crzArea.toString());
 		details.put(PERMISSIBLE, expectedResult);
 		details.put(PROVIDED, actualResult);
 		details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
