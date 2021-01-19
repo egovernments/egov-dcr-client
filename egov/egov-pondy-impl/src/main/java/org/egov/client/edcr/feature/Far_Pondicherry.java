@@ -891,7 +891,7 @@ public class Far_Pondicherry extends Far {
 	}
 
 	private Boolean isEwsBuilding(Plan pl) {
-		if(pl.getVirtualBuilding().getTotalBuitUpArea().compareTo(BigDecimal.valueOf(50l)) <= 0)
+		if(pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.EWS_BUILDING).equalsIgnoreCase(DcrConstants.YES))
 			return true;
 		return false;
 	}
