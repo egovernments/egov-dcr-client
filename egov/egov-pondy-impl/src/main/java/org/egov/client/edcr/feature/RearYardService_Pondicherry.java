@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RearYardService_Pondicherry extends GeneralRule {
 	private static final Logger LOG = Logger.getLogger(RearYardService_Pondicherry.class);
-	private static final String MINIMUMLABEL = "Minimum distance ";
 	private static final BigDecimal REARYARDMINIMUM_DISTANCE_1 = BigDecimal.valueOf(1L);
 	private static final BigDecimal REARYARDMINIMUM_DISTANCE_1_5 = BigDecimal.valueOf(1.5D);
 	private static final BigDecimal REARYARDMINIMUM_DISTANCE_3 = BigDecimal.valueOf(3L);
@@ -74,23 +73,16 @@ public class RearYardService_Pondicherry extends GeneralRule {
 				for (SetBack setback : block.getSetBacks()) {
 					if (setback.getRearYard() != null) {
 						BigDecimal min = setback.getRearYard().getMinimumDistance();
-						// BigDecimal mean = setback.getRearYard().getMean();
-
 						BigDecimal buildingHeight = (setback.getRearYard().getHeight() != null
 								&& setback.getRearYard().getHeight().compareTo(BigDecimal.ZERO) > 0)
 										? setback.getRearYard().getHeight() : block.getBuilding().getBuildingHeight();
 
 						if (buildingHeight != null && min.doubleValue() > 0.0D) {
-							// if (buildingHeight != null && (min.doubleValue() > 0.0D || mean.doubleValue()
-							// > 0.0D)) {
 							for (Occupancy occupancy : block.getBuilding().getTotalArea()) {
 								this.scrutinyDetail.setKey("Block_" + block.getName() + "_Rear Setback");
 
 								if (setback.getLevel().intValue() < 0) {
 									this.scrutinyDetail.setKey("Block_" + block.getName() + "_Basement Rear Setback");
-									// checkRearYardBasement(pl, block.getBuilding(), block.getName(),
-									// setback.getLevel(), plot, "Basement Rear Setback", min, mean,
-									// occupancy.getTypeHelper(), rearYardResult);
 									checkRearYardBasement(pl, block.getBuilding(), block.getName(), setback.getLevel(),
 											plot, "Basement Rear Setback", min, occupancy.getTypeHelper(), rearYardResult);
 								}
@@ -119,7 +111,8 @@ public class RearYardService_Pondicherry extends GeneralRule {
 						details.put("Field Verified", "Minimum distance ");
 						details.put("Permissible", rearYardResult.expectedminimumDistance.toString());
 						details.put("Provided", rearYardResult.actualMinDistance.toString());
-					} else {
+					} 
+					else {
 						details.put("Field Verified", "Minimum distance ");
 						details.put("Permissible", rearYardResult.expectedminimumDistance.toString());
 						details.put("Provided", rearYardResult.actualMinDistance.toString());
@@ -127,7 +120,8 @@ public class RearYardService_Pondicherry extends GeneralRule {
 
 					if (rearYardResult.status) {
 						details.put("Status", Result.Accepted.getResultVal());
-					} else {
+					} 
+					else {
 						details.put("Status", Result.Not_Accepted.getResultVal());
 					}
 					this.scrutinyDetail.getDetail().add(details);
@@ -161,76 +155,215 @@ public class RearYardService_Pondicherry extends GeneralRule {
 
 	private void checkRearYardForResidential(Plan pl, Block block, Integer level, BigDecimal min,
 			OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, String subRule, String rule,
-			BigDecimal minVal, BigDecimal meanVal, String typeOfArea, Boolean valid) {
-		String plotType = "Regular";
-		// getting additoinal property crz_area
-		String crz = pl.getPlanInfoProperties().get("CRZ_AREA");
-		// check it is ews
+			BigDecimal minVal, BigDecimal meanVal, String typeOfArea, Boolean valid) {		
+		String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
+		String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
+		Boolean ewsBuilding = isEwsBuilding(pl);
 		Boolean ewsPlot = isEwsPlot(pl);
 		Boolean CRZZone = false;
-		if (ewsPlot) {
-			plotType = "EWS";
-		}
-		String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
 
 		LOG.info("CRZ=" + pl.getPlanInformation().getCrzZoneArea());
 		if (crzValue != null && crzValue.equalsIgnoreCase(DcrConstants.YES)) {
 			CRZZone = true;
 		}
-
-		if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
-			if (CRZZone) {
-				switch (crz) {
+		
+		if (CRZZone) {
+			switch (crz) {
 				case DxfFileConstants_Pondicherry.CRZ2:
-					if (ewsPlot) {
-						minVal = REARYARDMINIMUM_DISTANCE_1;
-						subRule = RULE_PART_TWO_TABLE_ONE;
-					} else {
-						minVal = REARYARDMINIMUM_DISTANCE_1_5;
-						subRule = RULE_PART_TWO_TABLE_ONE;
+					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								minVal = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+							}
+						}
+						else
+						{
+							if(ewsBuilding) {
+								minVal = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+							else
+							{
+								minVal = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+						}
+					}
+					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
+					{
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								minVal = REARYARDMINIMUM_DISTANCE_1;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+							}
+						}
+						else
+						{
+							if(ewsBuilding) {
+								minVal = REARYARDMINIMUM_DISTANCE_1_5;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+							else
+							{
+								minVal = REARYARDMINIMUM_DISTANCE_1_5;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+						}
+					}
+					else
+					{
+						pl.addError("Invalid", "Invalid classification of area type is defined (Rear Set Back)");
 					}
 					break;
 				case DxfFileConstants_Pondicherry.CRZ3:
-					if (ewsPlot) {
-						minVal = REARYARDMINIMUM_DISTANCE_1;
-						subRule = RULE_PART_TWO_TABLE_ONE;
-					} else {
-						minVal = REARYARDMINIMUM_DISTANCE_1_5;
-						subRule = RULE_PART_TWO_TABLE_ONE;
+					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								minVal = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+							}
+						}
+						else
+						{
+							if(ewsBuilding) {
+								minVal = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+							else
+							{
+								minVal = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+						}
+					}
+					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
+					{
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								minVal = REARYARDMINIMUM_DISTANCE_1;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+							}
+						}
+						else
+						{
+							if(ewsBuilding) {
+								minVal = REARYARDMINIMUM_DISTANCE_1_5;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+							else
+							{
+								minVal = REARYARDMINIMUM_DISTANCE_1_5;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+						}
+					}
+					else
+					{
+						pl.addError("Invalid", "Invalid classification of area type is defined (Rear Set Back)");
 					}
 					break;
 				default:
-					pl.addError("Not Implemented", "No Data for CRZ");
+					pl.addError("Invalid", "Invalid CRZ is defined (Rear Set Back)");
 					break;
-				}
-			} else {
+			}
+		}
+		else
+		{
+			if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+					|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+						|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 				if (ewsPlot) {
-					minVal = REARYARDMINIMUM_DISTANCE_1;
-					subRule = RULE_PART_TWO_TABLE_ONE;
-				} else {
-					minVal = REARYARDMINIMUM_DISTANCE_1_5;
-					subRule = RULE_PART_TWO_TABLE_ONE;
+					if(ewsBuilding) {
+						minVal = BigDecimal.ZERO;
+						subRule = DcrConstants.NA;
+					}
+					else
+					{
+						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+					}
+				}
+				else
+				{
+					if(ewsBuilding) {
+						minVal = BigDecimal.ZERO;
+						subRule = DcrConstants.NA;
+					}
+					else
+					{
+						minVal = BigDecimal.ZERO;
+						subRule = DcrConstants.NA;
+					}
 				}
 			}
-		} else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)
-				|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
-				|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
-			minVal = BigDecimal.ZERO;
-			subRule = DxfFileConstants_Pondicherry.NOT_APPLICABLE;
-		} else {
-			pl.addError("Not Implemented", "Not a valid classification area");
+			else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
+			{
+				if (ewsPlot) {
+					if(ewsBuilding) {
+						minVal = REARYARDMINIMUM_DISTANCE_1;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					}
+					else
+					{
+						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+					}
+				}
+				else
+				{
+					if(ewsBuilding) {
+						minVal = REARYARDMINIMUM_DISTANCE_1_5;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					}
+					else
+					{
+						minVal = REARYARDMINIMUM_DISTANCE_1_5;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					}
+				}
+			}
+			else
+			{
+				pl.addError("Invalid", "Invalid classification of area type is defined (Rear Set Back)");
+			}
 		}
 
 		valid = validateMinimumAndMeanValue(min, minVal);
 
-		compareRearYardResult(block.getName(), min, mostRestrictiveOccupancy, rearYardResult, valid, subRule, rule,
-				minVal, level);
+		compareRearYardResult(block.getName(), min, mostRestrictiveOccupancy, rearYardResult, valid, subRule, rule, minVal, level);
 	}
 
 	public Boolean isEwsPlot(Plan pl) {
 		if (pl.getPlanInformation().getPlotArea().compareTo(BigDecimal.valueOf(100l)) < 0)
 			return true;
 		else
+			return false;
+	}
+	
+	public Boolean isEwsBuilding(Plan pl) {
+		if(StringUtils.isNotBlank(pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.EWS_BUILDING)) 
+				&& pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.EWS_BUILDING).equalsIgnoreCase(DcrConstants.YES)) 
+			return true;
+		else 
 			return false;
 	}
 
@@ -291,7 +424,8 @@ public class RearYardService_Pondicherry extends GeneralRule {
 		String occupancyName;
 		if (mostRestrictiveOccupancy.getSubtype() != null) {
 			occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
-		} else {
+		} 
+		else {
 			occupancyName = mostRestrictiveOccupancy.getType().getName();
 		}
 		if (minVal.compareTo(rearYardResult.expectedminimumDistance) >= 0) {
@@ -299,7 +433,8 @@ public class RearYardService_Pondicherry extends GeneralRule {
 				rearYardResult.rule = (rearYardResult.rule != null) ? (rearYardResult.rule + "," + rule) : rule;
 				rearYardResult.occupancy = (rearYardResult.occupancy != null)
 						? (rearYardResult.occupancy + "," + occupancyName) : occupancyName;
-			} else {
+			} 
+			else {
 				rearYardResult.rule = rule;
 				rearYardResult.occupancy = occupancyName;
 			}
