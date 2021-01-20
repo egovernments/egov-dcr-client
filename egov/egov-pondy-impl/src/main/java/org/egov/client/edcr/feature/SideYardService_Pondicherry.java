@@ -29,11 +29,7 @@ public class SideYardService_Pondicherry extends GeneralRule
   private static final BigDecimal SIDEVALUE_ONE = BigDecimal.valueOf(1L);
   private static final BigDecimal SIDEVALUE_ONEPOINTFIVE = BigDecimal.valueOf(1.5D);
   private static final BigDecimal SIDEVALUE_THREE = BigDecimal.valueOf(3L);
-  
   private static final String RULE = "Side Setback";
-  
-  private static final String MINIMUMLABEL = "Minimum distance";
-  
   private static final String RULE_PART_TWO_TABLE_ONE = "Part-II Table-1";
   private static final String SIDE_YARD_2_NOTDEFINED = "side2yardNodeDefined";
   private static final String SIDE_YARD_1_NOTDEFINED = "side1yardNodeDefined";
@@ -230,7 +226,9 @@ public class SideYardService_Pondicherry extends GeneralRule
   }
   
   
-  private void checkSideYard(Plan pl, Building building, BigDecimal buildingHeight, String blockName, Integer level, Plot plot, double min, double max, double minMeanlength, double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+  private void checkSideYard(Plan pl, Building building, BigDecimal buildingHeight, String blockName, Integer level, Plot plot, 
+		  double min, double max, double minMeanlength, double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, 
+		  SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
     String rule = "Side Setback";
     String subRule = "Part-II Table-1";
     Boolean valid2 = Boolean.valueOf(false);
@@ -244,23 +242,20 @@ public class SideYardService_Pondicherry extends GeneralRule
     		|| "A-AF".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) || "A-PO".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
       if (pl.getPlanInformation() != null && StringUtils.isNotBlank(pl.getPlanInformation().getLandUseZone()) 
     		  && "RESIDENTIAL".equalsIgnoreCase(pl.getPlanInformation().getLandUseZone()) && pl.getPlanInformation().getDepthOfPlot() != null) {
-        checkSideYardForResidential(pl, blockName, level, min, max, minMeanlength, maxMeanLength, mostRestrictiveOccupancy, sideYard1Result, sideYard2Result, rule, subRule, valid2, valid1, side2val, side1val, typeOfArea, depthOfPlot);
+        checkSideYardForResidential(pl, blockName, level, min, max, minMeanlength, maxMeanLength, mostRestrictiveOccupancy, 
+        		sideYard1Result, sideYard2Result, rule, subRule, valid2, valid1, side2val, side1val, typeOfArea, depthOfPlot);
       }
     }
   }
   
-  private void checkSideYardForResidential(Plan pl, String blockName, Integer level, double min, double max, double minMeanlength, double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, SideYardResult sideYard2Result, String rule, String subRule, Boolean valid2, Boolean valid1, BigDecimal side2val, BigDecimal side1val, String typeOfArea, BigDecimal depthOfPlot) {
-		String plotType="Regular";
-		// getting additoinal property crz_area
-		String crz = pl.getPlanInfoProperties().get("CRZ_AREA");
-		// check it is ews
-		Boolean ewsPlot = isEwsPlot(pl);
-		Boolean CRZZone=false;
-		if(ewsPlot)
-		{
-			plotType="EWS";
-		}
+  private void checkSideYardForResidential(Plan pl, String blockName, Integer level, double min, double max, double minMeanlength, 
+		  double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, SideYardResult sideYard2Result, 
+		  String rule, String subRule, Boolean valid2, Boolean valid1, BigDecimal side2val, BigDecimal side1val, String typeOfArea, BigDecimal depthOfPlot) {
+	    String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
 		String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
+		Boolean ewsBuilding = isEwsBuilding(pl);
+		Boolean ewsPlot = isEwsPlot(pl);
+		Boolean CRZZone = false;
 	
 		LOG.info("CRZ="+pl.getPlanInformation().getCrzZoneArea());
 		if(crzValue!=null && crzValue.equalsIgnoreCase(DcrConstants.YES))
@@ -268,7 +263,226 @@ public class SideYardService_Pondicherry extends GeneralRule
 			CRZZone=true;
 		}
 		
-		if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+		if (CRZZone) {
+			switch (crz) {
+				case DxfFileConstants_Pondicherry.CRZ2:
+					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+						if (ewsPlot) {
+							if(ewsBuilding) {
+							    side1val = BigDecimal.ZERO;
+							    side2val = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+							}
+						}
+						else
+						{
+							side1val = BigDecimal.ZERO;
+							side2val = BigDecimal.ZERO;
+							subRule = DcrConstants.NA;
+						}
+					}
+					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
+					{
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								side1val = BigDecimal.ZERO;
+							    side2val = BigDecimal.ZERO;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+							}
+						}
+						else
+						{
+							if (depthOfPlot == null) {
+								if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
+									pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
+							    }
+							    if (pl.getErrors().containsKey(SIDE_YARD_1_NOTDEFINED)) {
+							        pl.getErrors().remove(SIDE_YARD_1_NOTDEFINED);
+							    }
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
+								side1val = BigDecimal.ZERO;
+							    side2val = BigDecimal.ZERO;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
+							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
+								side1val = SIDEVALUE_ONE;
+							    side2val = BigDecimal.ZERO;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
+							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
+								side1val = SIDEVALUE_ONE;
+							    side2val = SIDEVALUE_ONE;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
+							    side1val = SIDEVALUE_ONEPOINTFIVE;
+							    side2val = SIDEVALUE_ONEPOINTFIVE;
+							    subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+						}
+					}
+					else
+					{
+						pl.addError("Invalid", "Invalid classification of area type is defined (Side Set Back)");
+					}
+					break;
+				case DxfFileConstants_Pondicherry.CRZ3:
+					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								side1val = BigDecimal.ZERO;
+							    side2val = BigDecimal.ZERO;
+								subRule = DcrConstants.NA;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+							}
+						}
+						else
+						{
+							side1val = BigDecimal.ZERO;
+							side2val = BigDecimal.ZERO;
+							subRule = DcrConstants.NA;
+						}
+					}
+					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
+					{
+						if (ewsPlot) {
+							if(ewsBuilding) {
+								side1val = BigDecimal.ZERO;
+							    side2val = BigDecimal.ZERO;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+							else
+							{
+								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+							}
+						}
+						else
+						{
+							if (depthOfPlot == null) {
+								if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
+									pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
+							    }
+							    if (pl.getErrors().containsKey(SIDE_YARD_1_NOTDEFINED)) {
+							        pl.getErrors().remove(SIDE_YARD_1_NOTDEFINED);
+							    }
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
+								side1val = BigDecimal.ZERO;
+							    side2val = BigDecimal.ZERO;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
+							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
+								side1val = SIDEVALUE_ONE;
+							    side2val = BigDecimal.ZERO;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
+							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
+								side1val = SIDEVALUE_ONE;
+							    side2val = SIDEVALUE_ONE;
+								subRule = RULE_PART_TWO_TABLE_ONE;
+							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
+							    side1val = SIDEVALUE_ONEPOINTFIVE;
+							    side2val = SIDEVALUE_ONEPOINTFIVE;
+							    subRule = RULE_PART_TWO_TABLE_ONE;
+							}
+						}
+					}
+					else
+					{
+						pl.addError("Invalid", "Invalid classification of area type is defined (Side Set Back)");
+					}
+					break;
+				default:
+					pl.addError("Invalid", "Invalid CRZ is defined (Side Set Back)");
+					break;
+			}
+		}
+		else
+		{
+			if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+					|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+						|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+				if (ewsPlot) {
+					if(ewsBuilding) {
+					    side1val = BigDecimal.ZERO;
+					    side2val = BigDecimal.ZERO;
+						subRule = DcrConstants.NA;
+					}
+					else
+					{
+						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+					}
+				}
+				else
+				{
+					side1val = BigDecimal.ZERO;
+					side2val = BigDecimal.ZERO;
+					subRule = DcrConstants.NA;
+				}
+			}
+			else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
+			{
+				if (ewsPlot) {
+					if(ewsBuilding) {
+						side1val = BigDecimal.ZERO;
+					    side2val = BigDecimal.ZERO;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					}
+					else
+					{
+						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+					}
+				}
+				else
+				{
+					if (depthOfPlot == null) {
+						if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
+							pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
+					    }
+					    if (pl.getErrors().containsKey(SIDE_YARD_1_NOTDEFINED)) {
+					        pl.getErrors().remove(SIDE_YARD_1_NOTDEFINED);
+					    }
+					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
+						side1val = BigDecimal.ZERO;
+					    side2val = BigDecimal.ZERO;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
+					    	&& depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
+						side1val = SIDEVALUE_ONE;
+					    side2val = BigDecimal.ZERO;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
+					    	&& depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
+						side1val = SIDEVALUE_ONE;
+					    side2val = SIDEVALUE_ONE;
+						subRule = RULE_PART_TWO_TABLE_ONE;
+					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
+					    side1val = SIDEVALUE_ONEPOINTFIVE;
+					    side2val = SIDEVALUE_ONEPOINTFIVE;
+					    subRule = RULE_PART_TWO_TABLE_ONE;
+					}
+				}
+			}
+			else
+			{
+				pl.addError("Invalid", "Invalid classification of area type is defined (Side Set Back)");
+			}
+		}
+		
+		/*if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
 			if (CRZZone) {
 				switch (crz) {
 				case DxfFileConstants_Pondicherry.CRZ2:
@@ -414,7 +628,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 		}
 		else {
 			pl.addError("Not Implemented", "Not a valid classification area");
-		}
+		}*/
     
     if (max >= side1val.doubleValue())
       valid1 = Boolean.valueOf(true); 
@@ -434,8 +648,18 @@ public class SideYardService_Pondicherry extends GeneralRule
 	  else 
 		  return false;
   }
+  
+  public Boolean isEwsBuilding(Plan pl) {
+	  if(StringUtils.isNotBlank(pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.EWS_BUILDING)) 
+			  && pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.EWS_BUILDING).equalsIgnoreCase(DcrConstants.YES)) 
+		  return true;
+	  else 
+		  return false;
+  }
 	
-  private void checkSideYardBasement(Plan pl, Building building, BigDecimal buildingHeight, String blockName, Integer level, Plot plot, double min, double max, double minMeanlength, double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+  private void checkSideYardBasement(Plan pl, Building building, BigDecimal buildingHeight, String blockName, Integer level, 
+		  Plot plot, double min, double max, double minMeanlength, double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, 
+		  SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
     String rule = "Basement Side Yard";
     String subRule = "47";
     Boolean valid2 = Boolean.valueOf(false);
@@ -463,7 +687,9 @@ public class SideYardService_Pondicherry extends GeneralRule
     } 
   }
 
-  private void compareSideYard1Result(String blockName, BigDecimal exptDistance, BigDecimal actualDistance, BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, Boolean valid, String subRule, String rule, Integer level) {
+  private void compareSideYard1Result(String blockName, BigDecimal exptDistance, BigDecimal actualDistance, 
+		  BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance, OccupancyTypeHelper mostRestrictiveOccupancy, 
+		  SideYardResult sideYard1Result, Boolean valid, String subRule, String rule, Integer level) {
     String occupancyName;
     if (mostRestrictiveOccupancy.getSubtype() != null) {
       occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
@@ -489,7 +715,9 @@ public class SideYardService_Pondicherry extends GeneralRule
     } 
   }
 
-  private void compareSideYard2Result(String blockName, BigDecimal exptDistance, BigDecimal actualDistance, BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard2Result, Boolean valid, String subRule, String rule, Integer level) {
+  private void compareSideYard2Result(String blockName, BigDecimal exptDistance, BigDecimal actualDistance, 
+		  BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance, OccupancyTypeHelper mostRestrictiveOccupancy, 
+		  SideYardResult sideYard2Result, Boolean valid, String subRule, String rule, Integer level) {
     String occupancyName;
     if (mostRestrictiveOccupancy.getSubtype() != null) {
       occupancyName = mostRestrictiveOccupancy.getSubtype().getName();

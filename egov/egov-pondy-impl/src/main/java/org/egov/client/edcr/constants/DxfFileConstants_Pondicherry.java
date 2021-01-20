@@ -9,7 +9,7 @@ public class DxfFileConstants_Pondicherry
 	public static final String CRZ1 = "CRZ-I";
 	public static final String CRZ2 = "CRZ-II";
 	public static final String CRZ3 = "CRZ-III";
-	public static final String CRZ_AREA = "CRZ AREA";
+	public static final String CRZ_AREA = "CRZ_AREA";
 	public static final String NOT_APPLICABLE = "NA";
 	public static final String RULE_NO = "Byelaw";
 	public static final String PERMISSIBLE = "Permissible";
