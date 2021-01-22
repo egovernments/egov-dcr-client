@@ -1,0 +1,10 @@
+{
+	"clients" : [
+		{
+			"clientId" : "egov-restapi-client",
+			"clientSecret" : "egov-restapi-secret",
+			"accessTokenValidity" : "10",
+			"refreshTokenValidity" : "15"
+		}
+	]
+}
