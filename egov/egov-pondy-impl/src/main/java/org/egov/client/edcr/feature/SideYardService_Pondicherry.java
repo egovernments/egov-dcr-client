@@ -238,13 +238,10 @@ public class SideYardService_Pondicherry extends GeneralRule
     BigDecimal depthOfPlot = pl.getPlanInformation().getDepthOfPlot();
     String typeOfArea = pl.getPlanInformation().getTypeOfArea();
     
-    if (mostRestrictiveOccupancy.getSubtype() != null && ("A-R".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
-    		|| "A-AF".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) || "A-PO".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
-      if (pl.getPlanInformation() != null && StringUtils.isNotBlank(pl.getPlanInformation().getLandUseZone()) 
-    		  && "RESIDENTIAL".equalsIgnoreCase(pl.getPlanInformation().getLandUseZone()) && pl.getPlanInformation().getDepthOfPlot() != null) {
+    if (pl.getPlanInformation() != null && StringUtils.isNotBlank(pl.getPlanInformation().getLandUseZone()) 
+    		&& "RESIDENTIAL".equalsIgnoreCase(pl.getPlanInformation().getLandUseZone()) && pl.getPlanInformation().getDepthOfPlot() != null) {
         checkSideYardForResidential(pl, blockName, level, min, max, minMeanlength, maxMeanLength, mostRestrictiveOccupancy, 
         		sideYard1Result, sideYard2Result, rule, subRule, valid2, valid1, side2val, side1val, typeOfArea, depthOfPlot);
-      }
     }
   }
   
@@ -277,7 +274,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
@@ -297,7 +294,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
@@ -332,13 +329,11 @@ public class SideYardService_Pondicherry extends GeneralRule
 					}
 					else
 					{
-						pl.addError("Invalid", "Invalid classification of area type is defined (Side Set Back)");
+						pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
 					}
 					break;
 				case DxfFileConstants_Pondicherry.CRZ3:
-					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
-							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
-								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 						if (ewsPlot) {
 							if(ewsBuilding) {
 								side1val = BigDecimal.ZERO;
@@ -347,7 +342,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
@@ -367,7 +362,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
@@ -400,21 +395,24 @@ public class SideYardService_Pondicherry extends GeneralRule
 							}
 						}
 					}
+					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)) {
+						pl.addError("Invalid", "CRZ-III is not applicable for White Town and Tamil Town");
+					}
 					else
 					{
-						pl.addError("Invalid", "Invalid classification of area type is defined (Side Set Back)");
+						pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
 					}
 					break;
 				default:
-					pl.addError("Invalid", "Invalid CRZ is defined (Side Set Back)");
+					pl.addError("Invalid", "Invalid CRZ is defined in Plan Information");
 					break;
 			}
 		}
 		else
 		{
-			if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
-					|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
-						|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+			if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+					|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 				if (ewsPlot) {
 					if(ewsBuilding) {
 					    side1val = BigDecimal.ZERO;
@@ -423,7 +421,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 					}
 					else
 					{
-						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+						pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 					}
 				}
 				else
@@ -443,7 +441,7 @@ public class SideYardService_Pondicherry extends GeneralRule
 					}
 					else
 					{
-						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Side Set Back)");
+						pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 					}
 				}
 				else
@@ -476,9 +474,12 @@ public class SideYardService_Pondicherry extends GeneralRule
 					}
 				}
 			}
+			else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)) {
+				pl.addError("Invalid", "Regular Building is not applicable for White Town");
+			}
 			else
 			{
-				pl.addError("Invalid", "Invalid classification of area type is defined (Side Set Back)");
+				pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
 			}
 		}
     

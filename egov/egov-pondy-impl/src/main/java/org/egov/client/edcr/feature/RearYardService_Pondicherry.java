@@ -141,15 +141,10 @@ public class RearYardService_Pondicherry extends GeneralRule {
 		BigDecimal meanVal = BigDecimal.valueOf(0L);
 		String typeOfArea = pl.getPlanInformation().getTypeOfArea();
 
-		if (mostRestrictiveOccupancy.getSubtype() != null
-				&& ("A-R".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
-						|| "A-AF".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
-						|| "A-PO".equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
-			if (pl.getPlanInformation() != null && StringUtils.isNotBlank(pl.getPlanInformation().getLandUseZone())
-					&& "RESIDENTIAL".equalsIgnoreCase(pl.getPlanInformation().getLandUseZone())) {
-				checkRearYardForResidential(pl, block, level, min, mostRestrictiveOccupancy, rearYardResult, subRule,
-						rule, minVal, meanVal, typeOfArea, valid);
-			}
+		if (pl.getPlanInformation() != null && StringUtils.isNotBlank(pl.getPlanInformation().getLandUseZone())
+				&& "RESIDENTIAL".equalsIgnoreCase(pl.getPlanInformation().getLandUseZone())) {
+			checkRearYardForResidential(pl, block, level, min, mostRestrictiveOccupancy, rearYardResult, subRule,
+					rule, minVal, meanVal, typeOfArea, valid);
 		}
 	}
 
@@ -180,20 +175,13 @@ public class RearYardService_Pondicherry extends GeneralRule {
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
 						{
-							if(ewsBuilding) {
-								minVal = BigDecimal.ZERO;
-								subRule = DcrConstants.NA;
-							}
-							else
-							{
-								minVal = BigDecimal.ZERO;
-								subRule = DcrConstants.NA;
-							}
+							minVal = BigDecimal.ZERO;
+							subRule = DcrConstants.NA;
 						}
 					}
 					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
@@ -205,31 +193,22 @@ public class RearYardService_Pondicherry extends GeneralRule {
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
 						{
-							if(ewsBuilding) {
-								minVal = REARYARDMINIMUM_DISTANCE_1_5;
-								subRule = RULE_PART_TWO_TABLE_ONE;
-							}
-							else
-							{
-								minVal = REARYARDMINIMUM_DISTANCE_1_5;
-								subRule = RULE_PART_TWO_TABLE_ONE;
-							}
+							minVal = REARYARDMINIMUM_DISTANCE_1_5;
+							subRule = RULE_PART_TWO_TABLE_ONE;
 						}
 					}
 					else
 					{
-						pl.addError("Invalid", "Invalid classification of area type is defined (Rear Set Back)");
+						pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
 					}
 					break;
 				case DxfFileConstants_Pondicherry.CRZ3:
-					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
-							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
-								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+					if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 						if (ewsPlot) {
 							if(ewsBuilding) {
 								minVal = BigDecimal.ZERO;
@@ -237,20 +216,13 @@ public class RearYardService_Pondicherry extends GeneralRule {
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
 						{
-							if(ewsBuilding) {
-								minVal = BigDecimal.ZERO;
-								subRule = DcrConstants.NA;
-							}
-							else
-							{
-								minVal = BigDecimal.ZERO;
-								subRule = DcrConstants.NA;
-							}
+							minVal = BigDecimal.ZERO;
+							subRule = DcrConstants.NA;
 						}
 					}
 					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
@@ -262,37 +234,33 @@ public class RearYardService_Pondicherry extends GeneralRule {
 							}
 							else
 							{
-								pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+								pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 							}
 						}
 						else
 						{
-							if(ewsBuilding) {
-								minVal = REARYARDMINIMUM_DISTANCE_1_5;
-								subRule = RULE_PART_TWO_TABLE_ONE;
-							}
-							else
-							{
-								minVal = REARYARDMINIMUM_DISTANCE_1_5;
-								subRule = RULE_PART_TWO_TABLE_ONE;
-							}
+							minVal = REARYARDMINIMUM_DISTANCE_1_5;
+							subRule = RULE_PART_TWO_TABLE_ONE;
 						}
+					}
+					else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)) {
+						pl.addError("Invalid", "CRZ-III is not applicable for White Town and Tamil Town");
 					}
 					else
 					{
-						pl.addError("Invalid", "Invalid classification of area type is defined (Rear Set Back)");
+						pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
 					}
 					break;
 				default:
-					pl.addError("Invalid", "Invalid CRZ is defined (Rear Set Back)");
+					pl.addError("Invalid", "Invalid CRZ is defined in Plan Information");
 					break;
 			}
 		}
 		else
 		{
-			if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
-					|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
-						|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
+			if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+					|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)) {
 				if (ewsPlot) {
 					if(ewsBuilding) {
 						minVal = BigDecimal.ZERO;
@@ -300,20 +268,13 @@ public class RearYardService_Pondicherry extends GeneralRule {
 					}
 					else
 					{
-						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+						pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 					}
 				}
 				else
 				{
-					if(ewsBuilding) {
-						minVal = BigDecimal.ZERO;
-						subRule = DcrConstants.NA;
-					}
-					else
-					{
-						minVal = BigDecimal.ZERO;
-						subRule = DcrConstants.NA;
-					}
+					minVal = BigDecimal.ZERO;
+					subRule = DcrConstants.NA;
 				}
 			}
 			else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA))
@@ -325,25 +286,18 @@ public class RearYardService_Pondicherry extends GeneralRule {
 					}
 					else
 					{
-						pl.addError("Invalid", "Regular Building not allowed in EWS plot (Rear Set Back)");
+						pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
 					}
 				}
 				else
 				{
-					if(ewsBuilding) {
-						minVal = REARYARDMINIMUM_DISTANCE_1_5;
-						subRule = RULE_PART_TWO_TABLE_ONE;
-					}
-					else
-					{
-						minVal = REARYARDMINIMUM_DISTANCE_1_5;
-						subRule = RULE_PART_TWO_TABLE_ONE;
-					}
+					minVal = REARYARDMINIMUM_DISTANCE_1_5;
+					subRule = RULE_PART_TWO_TABLE_ONE;
 				}
 			}
 			else
 			{
-				pl.addError("Invalid", "Invalid classification of area type is defined (Rear Set Back)");
+				pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
 			}
 		}
 
