@@ -14,4 +14,5 @@ public class DxfFileConstants_Pondicherry
 	public static final String RULE_NO = "Byelaw";
 	public static final String PERMISSIBLE = "Permissible";
 	public static final String EWS_BUILDING = "EWS_BUILDING";
+	public static final String STILT_FLOOR = "STILT_FLOOR";
 }
