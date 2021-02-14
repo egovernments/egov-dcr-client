@@ -33,35 +33,28 @@ public class Basement_Pondicherry extends FeatureProcess
 	}
   
 	public Plan process(Plan pl) {
-		validate(pl);
-		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
-	    scrutinyDetail.setKey("Common_Basement");
-	    scrutinyDetail.addColumnHeading(1, RULE_NO);
-	    scrutinyDetail.addColumnHeading(2, DESCRIPTION);
-	    scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
-	    scrutinyDetail.addColumnHeading(4, PROVIDED);
-	    scrutinyDetail.addColumnHeading(5, STATUS);
-	    
-	    BigDecimal floorHeight = BigDecimal.ZERO;
-	    String typeOfArea = pl.getPlanInformation().getTypeOfArea();
-	    String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
-		String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
-		Boolean ewsBuilding = isEwsBuilding(pl);
-		Boolean ewsPlot = isEwsPlot(pl);
-		Boolean CRZZone = false;
-		
-		LOG.info("CRZ=" + pl.getPlanInformation().getCrzZoneArea());
-		if (crzValue != null && crzValue.equalsIgnoreCase(DcrConstants.YES)) {
-			CRZZone = true;
-		}
+		validate(pl);	    
     
 		if (pl.getBlocks() != null) {
 			for (Block block : pl.getBlocks()) {
-				if (block.getBuilding() != null && block.getBuilding().getFloors() != null 
-						&& !block.getBuilding().getFloors().isEmpty())
+				ScrutinyDetail scrutinyDetail = getNewScrutinyDetail("Block_" + block.getNumber() + "_Basement");
+			    BigDecimal floorHeight = BigDecimal.ZERO;
+			    String typeOfArea = pl.getPlanInformation().getTypeOfArea();
+			    String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
+				String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
+				Boolean ewsBuilding = isEwsBuilding(pl);
+				Boolean ewsPlot = isEwsPlot(pl);
+				Boolean stiltFloor = isStiltFloor(pl);
+				Boolean CRZZone = false;
+				
+				if (crzValue != null && crzValue.equalsIgnoreCase(DcrConstants.YES)) {
+					CRZZone = true;
+				}
+				
+				if (block.getBuilding() != null && block.getBuilding().getFloors() != null && !block.getBuilding().getFloors().isEmpty())
 				{
 					for (Floor floor : block.getBuilding().getFloors()) {
-						if (floor.getNumber().intValue() == -1) {
+						if (floor.getNumber().intValue() == -1 && !stiltFloor) {
 							if (floor.getHeightFromTheFloorToCeiling() != null && !floor.getHeightFromTheFloorToCeiling().isEmpty()) {
 								floorHeight = (BigDecimal)floor.getHeightFromTheFloorToCeiling().stream().reduce(BigDecimal::min).get();
 								if (CRZZone) {
@@ -215,6 +208,25 @@ public class Basement_Pondicherry extends FeatureProcess
 			return true;
 		else 
 			return false;
+	}
+	
+	public Boolean isStiltFloor(Plan pl) {
+		if(StringUtils.isNotBlank(pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.STILT_FLOOR)) 
+				&& pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.STILT_FLOOR).equalsIgnoreCase(DcrConstants.YES)) 
+			return true;
+		else 
+			return false;
+	}
+	
+	private ScrutinyDetail getNewScrutinyDetail(String key) {
+		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+		scrutinyDetail.addColumnHeading(Integer.valueOf(1), RULE_NO);
+		scrutinyDetail.addColumnHeading(Integer.valueOf(2), DESCRIPTION);
+		scrutinyDetail.addColumnHeading(Integer.valueOf(3), PERMISSIBLE);
+		scrutinyDetail.addColumnHeading(Integer.valueOf(4), PROVIDED);
+		scrutinyDetail.addColumnHeading(Integer.valueOf(5), STATUS);
+		scrutinyDetail.setKey(key);
+		return scrutinyDetail;
 	}
   
 	private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String expected, BigDecimal actual, String status) {
