@@ -25,11 +25,16 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 {
 	private static final Logger LOG = Logger.getLogger(AdditionalFeature_Pondicherry.class);
 	private static final String RULE = "Part-II Table-1 Amended 09/04/2020";
+	private static final String RULE_STILT = "Stilt Floor";
+	private static final String SUB_RULE = "Part-I Clause 30 (IX)";
 	private static final BigDecimal ONE = BigDecimal.valueOf(1L);
 	private static final BigDecimal TWO = BigDecimal.valueOf(2L);
+	private static final BigDecimal TWO_POINT_FOUR = BigDecimal.valueOf(2.4D);
 	private static final BigDecimal THREE = BigDecimal.valueOf(3L);
+	private static final long SIX = 6;
   
 	public static final String NO_OF_FLOORS = "Maximum number of floors allowed";
+	public static final String NO_OF_DWELLING_UNITS = "Maximum number of dwelling units allowed";
 	public static final String HEIGHT_BUILDING = "Maximum height of building allowed";
 	public static final String MIN_PLINTH_HEIGHT = " >= 0.45";
 	public static final String MIN_PLINTH_HEIGHT_DESC = "Minimum plinth height";
@@ -52,6 +57,7 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 		}
 		return pl;
 	}
+	
 
 	public Plan process(Plan pl) {
 		HashMap<String, String> errors = new HashMap<String, String>();
@@ -59,9 +65,174 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 		String typeOfArea = pl.getPlanInformation().getTypeOfArea();
 		if (StringUtils.isNotBlank(typeOfArea)) {
 			validateNumberOfFloors(pl, errors, typeOfArea);
+			processFloorUnits(pl, errors, typeOfArea);
+			validateStiltFloor(pl, errors, typeOfArea);
 		}    
 		return pl;
 	}
+	
+	private void processFloorUnits(Plan pl, HashMap<String, String> errors, String typeOfArea) {
+        long totalFloorUnits = 0l;
+        for (Block block : pl.getBlocks()) {
+        	boolean isAccepted = false;
+        	ScrutinyDetail scrutinyDetail = getNewScrutinyDetail("Block_" + block.getNumber() + "_Dwelling Units");
+            long totalBlockFloorUnits = 0l;
+            if (block.getBuilding() != null && !block.getBuilding().getFloors().isEmpty()) {
+                for (Floor floor : block.getBuilding().getFloors())
+                    if (floor.getUnits() != null && !floor.getUnits().isEmpty())
+                        totalBlockFloorUnits = totalBlockFloorUnits + floor.getUnits().stream().count();
+            }
+            totalFloorUnits = totalFloorUnits + totalBlockFloorUnits;
+            if (totalFloorUnits <= 0)
+            {
+                pl.addError("Kitchen Unit", String.format("Mandatory Kitchen unit is not defined for Residential in the block %s",
+                                block.getNumber()));
+            }
+            
+            String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
+			String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
+			Boolean ewsBuilding = isEwsBuilding(pl);
+			Boolean ewsPlot = isEwsPlot(pl);
+			Boolean CRZZone = false;
+
+			if (crzValue != null && crzValue.equalsIgnoreCase(DcrConstants.YES)) {
+				CRZZone = true;
+			}
+		
+			if (CRZZone) {
+				switch (crz) {
+					case DxfFileConstants_Pondicherry.CRZ2:
+						if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+									|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)
+										|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+							if (ewsPlot) {
+								if(ewsBuilding) {
+									if (totalFloorUnits <= SIX) {
+										isAccepted = true;
+									}
+									else
+									{
+										pl.addError("Invalid", String.format("Maximum six dwelling units is allowed in the block %s", block.getNumber()));
+									}
+								}
+								else
+								{
+									pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
+								}
+							}
+							else
+							{
+								if (totalFloorUnits <= SIX) {
+									isAccepted = true;
+								}
+								else
+								{
+									pl.addError("Invalid", String.format("Maximum six dwelling units is allowed in the block %s", block.getNumber()));
+								}
+							}
+						}
+						else
+						{
+							pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
+						}
+						break;
+					case DxfFileConstants_Pondicherry.CRZ3:
+						if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+							if (ewsPlot) {
+								if(ewsBuilding) {
+									if (totalFloorUnits <= SIX) {
+										isAccepted = true;
+									}
+									else
+									{
+										pl.addError("Invalid", String.format("Maximum six dwelling units is allowed in the block %s", block.getNumber()));
+									}
+								}
+								else
+								{
+									pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
+								}
+							}
+							else
+							{
+								if (totalFloorUnits <= SIX) {
+									isAccepted = true;
+								}
+								else
+								{
+									pl.addError("Invalid", String.format("Maximum six dwelling units is allowed in the block %s", block.getNumber()));
+								}
+							}
+						}
+						else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)) {
+							pl.addError("Invalid", "CRZ-III is not applicable for White Town and Tamil Town");
+						}
+						else
+						{
+							pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
+						}
+						break;
+					default:
+						pl.addError("Invalid", "Invalid CRZ is defined in Plan Information");
+						break;
+				}
+			}
+			else
+			{
+				if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+						|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)
+							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+					if (ewsPlot) {
+						if(ewsBuilding) {
+							if (totalFloorUnits <= SIX) {
+								isAccepted = true;
+							}
+							else
+							{
+								pl.addError("Invalid", String.format("Maximum six dwelling units is allowed in the block %s", block.getNumber()));
+							}
+						}
+						else
+						{
+							pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
+						}
+					}
+					else
+					{
+						if (totalFloorUnits <= SIX) {
+							isAccepted = true;
+						}
+						else
+						{
+							pl.addError("Invalid", String.format("Maximum six dwelling units is allowed in the block %s", block.getNumber()));
+						}
+					}
+				}
+				else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)) {
+    				pl.addError("Invalid", "Regular Building is not applicable for White Town");
+				}
+				else
+				{
+					pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
+				}
+			}
+			
+			if (errors.isEmpty()) {
+				Map<String, String> details = new HashMap<String, String>();
+				details.put(RULE_NO, RULE);
+				details.put(DESCRIPTION, NO_OF_DWELLING_UNITS);
+				details.put(PERMISSIBLE, String.valueOf(SIX));
+				details.put(PROVIDED, String.valueOf(totalFloorUnits));
+				details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+				scrutinyDetail.getDetail().add(details);
+				pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+			}
+            
+        }
+    }
   
 	private void validateNumberOfFloors(Plan pl, HashMap<String, String> errors, String typeOfArea) {
 		for (Block block : pl.getBlocks()) {
@@ -79,7 +250,6 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 			Boolean basementFloor = isBasementFloor(block);
 			Boolean CRZZone = false;
 
-			LOG.info("CRZ=" + pl.getPlanInformation().getCrzZoneArea());
 			if (crzValue != null && crzValue.equalsIgnoreCase(DcrConstants.YES)) {
 				CRZZone = true;
 			}
@@ -309,6 +479,166 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 			} 
 		}
 	}
+	
+	private void validateStiltFloor(Plan pl, HashMap<String, String> errors, String typeOfArea) {
+		if (pl.getBlocks() != null) {
+			for (Block block : pl.getBlocks()) {
+				ScrutinyDetail scrutinyDetail = getNewScrutinyDetail("Block_" + block.getNumber() + "_Stilt");
+				BigDecimal floorHeight = BigDecimal.ZERO;
+			    String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
+				String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
+				Boolean ewsBuilding = isEwsBuilding(pl);
+				Boolean ewsPlot = isEwsPlot(pl);
+				Boolean stiltFloor = isStiltFloor(pl);
+				Boolean CRZZone = false;
+				
+				if (crzValue != null && crzValue.equalsIgnoreCase(DcrConstants.YES)) {
+					CRZZone = true;
+				}
+				
+				Boolean basementFloor = isBasementFloor(block);
+				if (block.getBuilding() != null && block.getBuilding().getFloors() != null && !block.getBuilding().getFloors().isEmpty())
+				{
+					for (Floor floor : block.getBuilding().getFloors()) {
+						if (floor.getNumber().intValue() == 0 && stiltFloor && !basementFloor) {
+							if (floor.getHeightFromTheFloorToCeiling() != null && !floor.getHeightFromTheFloorToCeiling().isEmpty()) {
+								floorHeight = (BigDecimal)floor.getHeightFromTheFloorToCeiling().stream().reduce(BigDecimal::min).get();
+								if (CRZZone) {
+									switch (crz) {
+										case DxfFileConstants_Pondicherry.CRZ2:
+											if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN)
+													|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+														|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)
+															|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+												if (ewsPlot) {
+					  								if(ewsBuilding) {
+					  									if(floorHeight.compareTo(TWO_POINT_FOUR) >= 0)
+					  									{
+					  										setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Accepted.getResultVal());
+					  									}
+					  									else
+					  									{
+					  										setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Not_Accepted.getResultVal());
+					  									}
+					  								}
+					  								else
+					  								{
+					  									pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
+					  								}
+					  							}
+					  							else
+					  							{
+					  								if(floorHeight.compareTo(TWO_POINT_FOUR) >= 0)
+				  									{
+				  										setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Accepted.getResultVal());
+				  									}
+				  									else
+				  									{
+				  										setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Not_Accepted.getResultVal());
+				  									}
+					  							}
+					  						}
+					  						else
+					  						{
+					  							pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
+					  						}
+					  						break;
+					  					case DxfFileConstants_Pondicherry.CRZ3:
+					  						if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)
+					  								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+					  							if (ewsPlot) {
+					  								if(ewsBuilding) {
+					  									if(floorHeight.compareTo(TWO_POINT_FOUR) >= 0)
+					  									{
+					  										setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Accepted.getResultVal());
+					  									}
+					  									else
+					  									{
+					  										setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Not_Accepted.getResultVal());
+					  									}
+					  								}
+					  								else
+					  								{
+					  									pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
+					  								}
+					  							}
+					  							else
+					  							{
+					  								if(floorHeight.compareTo(TWO_POINT_FOUR) >= 0)
+					  								{
+					  									setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Accepted.getResultVal());
+					  								}
+					  								else
+					  								{
+					  									setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Not_Accepted.getResultVal());
+					  								}
+					  							}
+					  						}
+					  						else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN) 
+					  								|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN))
+					  						{
+					  							pl.addError("Invalid", "CRZ-III is not applicable for White Town and Tamil Town");
+					  						}
+					  						else
+					  						{
+					  							pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
+					  						}
+					  						break;
+					  					default:
+					  						pl.addError("Invalid", "Invalid CRZ is defined in Plan Information");
+					  						break;
+									}
+								}
+					  			else
+					  			{
+					  				if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.TAMIL_TOWN)
+					  						|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OUTSIDE_BOULEVARD)
+					  							|| typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.OTHER_AREA)) {
+					  					if (ewsPlot) {
+					  						if(ewsBuilding) {
+					  							if(floorHeight.compareTo(TWO_POINT_FOUR) >= 0)
+					  							{
+					  								setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Accepted.getResultVal());
+					  							}
+					  							else
+					  							{
+					  								setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Not_Accepted.getResultVal());
+					  							}
+					  						}
+					  						else
+					  						{
+					  							pl.addError("Invalid", "Regular Building is not allowed in EWS plot");
+					  						}
+					  					}
+					  					else
+					  					{
+					  						if(floorHeight.compareTo(TWO_POINT_FOUR) >= 0)
+					  						{
+					  							setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Accepted.getResultVal());
+					  						}
+					  						else
+					  						{
+					  							setReportOutputDetails(pl, SUB_RULE, RULE_STILT, TWO_POINT_FOUR +"(MTR)", floorHeight, Result.Not_Accepted.getResultVal());
+					  						}
+					  					}
+					  				}
+					  				else if (typeOfArea.equalsIgnoreCase(DxfFileConstants_Pondicherry.WHITE_TOWN))
+					  				{
+					  					pl.addError("Invalid", "Regular Building is not applicable for White Town");
+					  				}
+					  				else
+					  				{
+					  					pl.addError("Invalid", "Invalid classification of area type is defined in Plan Information");
+					  				}
+					  			}
+							}
+							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+						} 
+					} 
+				}
+			} 
+		}
+    }
   
 	public Boolean isEwsPlot(Plan pl) {
 		if (pl.getPlanInformation().getPlotArea().compareTo(BigDecimal.valueOf(100l)) < 0)
@@ -337,7 +667,6 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 		boolean isBasement = false;
 		for (Floor floor : block.getBuilding().getFloors())
 		{
-			System.out.println("floor.getNumber().intValue()"+floor.getNumber().intValue());
 			if (floor.getNumber().intValue() == -1)
 			{
 				isBasement = true;
@@ -355,6 +684,17 @@ public class AdditionalFeature_Pondicherry extends FeatureProcess
 		scrutinyDetail.addColumnHeading(Integer.valueOf(5), STATUS);
 		scrutinyDetail.setKey(key);
 		return scrutinyDetail;
+	}
+	
+	private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String expected, BigDecimal actual, String status) {
+		Map<String, String> details = new HashMap<String, String>();
+	    details.put(RULE_NO, ruleNo);
+	    details.put(DESCRIPTION, ruleDesc);
+	    details.put(PERMISSIBLE, expected);
+	    details.put(PROVIDED, actual.toString());
+	    details.put(STATUS, status);
+	    this.scrutinyDetail.getDetail().add(details);
+	    pl.getReportOutput().getScrutinyDetails().add(this.scrutinyDetail);
 	}
   
 	public Map<String, Date> getAmendments() { 
