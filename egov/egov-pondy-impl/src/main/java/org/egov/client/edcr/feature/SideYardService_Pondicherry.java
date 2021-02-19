@@ -235,19 +235,19 @@ public class SideYardService_Pondicherry extends GeneralRule
     Boolean valid1 = Boolean.valueOf(false);
     BigDecimal side2val = BigDecimal.ZERO;
     BigDecimal side1val = BigDecimal.ZERO;
-    BigDecimal depthOfPlot = pl.getPlanInformation().getDepthOfPlot();
+    BigDecimal widthOfPlot = pl.getPlanInformation().getWidthOfPlot();    
     String typeOfArea = pl.getPlanInformation().getTypeOfArea();
     
     if (pl.getPlanInformation() != null && StringUtils.isNotBlank(pl.getPlanInformation().getLandUseZone()) 
     		&& "RESIDENTIAL".equalsIgnoreCase(pl.getPlanInformation().getLandUseZone()) && pl.getPlanInformation().getDepthOfPlot() != null) {
         checkSideYardForResidential(pl, blockName, level, min, max, minMeanlength, maxMeanLength, mostRestrictiveOccupancy, 
-        		sideYard1Result, sideYard2Result, rule, subRule, valid2, valid1, side2val, side1val, typeOfArea, depthOfPlot);
+        		sideYard1Result, sideYard2Result, rule, subRule, valid2, valid1, side2val, side1val, typeOfArea, widthOfPlot);
     }
   }
   
   private void checkSideYardForResidential(Plan pl, String blockName, Integer level, double min, double max, double minMeanlength, 
 		  double maxMeanLength, OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, SideYardResult sideYard2Result, 
-		  String rule, String subRule, Boolean valid2, Boolean valid1, BigDecimal side2val, BigDecimal side1val, String typeOfArea, BigDecimal depthOfPlot) {
+		  String rule, String subRule, Boolean valid2, Boolean valid1, BigDecimal side2val, BigDecimal side1val, String typeOfArea, BigDecimal widthOfPlot) {
 	    String crz = pl.getPlanInfoProperties().get(DxfFileConstants_Pondicherry.CRZ_AREA);
 		String crzValue = pl.getPlanInfoProperties().get(DxfFileConstants.CRZ_ZONE);
 		Boolean ewsBuilding = isEwsBuilding(pl);
@@ -299,28 +299,28 @@ public class SideYardService_Pondicherry extends GeneralRule
 						}
 						else
 						{
-							if (depthOfPlot == null) {
+							if (widthOfPlot == null) {
 								if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
 									pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
 							    }
 							    if (pl.getErrors().containsKey(SIDE_YARD_1_NOTDEFINED)) {
 							        pl.getErrors().remove(SIDE_YARD_1_NOTDEFINED);
 							    }
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
 								side1val = BigDecimal.ZERO;
 							    side2val = BigDecimal.ZERO;
 								subRule = RULE_PART_TWO_TABLE_ONE;
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
-							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
+							    	&& widthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
 								side1val = SIDEVALUE_ONE;
 							    side2val = BigDecimal.ZERO;
 								subRule = RULE_PART_TWO_TABLE_ONE;
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
-							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
+							    	&& widthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
 								side1val = SIDEVALUE_ONE;
 							    side2val = SIDEVALUE_ONE;
 								subRule = RULE_PART_TWO_TABLE_ONE;
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
 							    side1val = SIDEVALUE_ONEPOINTFIVE;
 							    side2val = SIDEVALUE_ONEPOINTFIVE;
 							    subRule = RULE_PART_TWO_TABLE_ONE;
@@ -367,28 +367,28 @@ public class SideYardService_Pondicherry extends GeneralRule
 						}
 						else
 						{
-							if (depthOfPlot == null) {
+							if (widthOfPlot == null) {
 								if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
 									pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
 							    }
 							    if (pl.getErrors().containsKey(SIDE_YARD_1_NOTDEFINED)) {
 							        pl.getErrors().remove(SIDE_YARD_1_NOTDEFINED);
 							    }
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
 								side1val = BigDecimal.ZERO;
 							    side2val = BigDecimal.ZERO;
 								subRule = RULE_PART_TWO_TABLE_ONE;
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
-							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
+							    	&& widthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
 								side1val = SIDEVALUE_ONE;
 							    side2val = BigDecimal.ZERO;
 								subRule = RULE_PART_TWO_TABLE_ONE;
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
-							    	&& depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
+							    	&& widthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
 								side1val = SIDEVALUE_ONE;
 							    side2val = SIDEVALUE_ONE;
 								subRule = RULE_PART_TWO_TABLE_ONE;
-							} else if (depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
+							} else if (widthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
 							    side1val = SIDEVALUE_ONEPOINTFIVE;
 							    side2val = SIDEVALUE_ONEPOINTFIVE;
 							    subRule = RULE_PART_TWO_TABLE_ONE;
@@ -446,28 +446,28 @@ public class SideYardService_Pondicherry extends GeneralRule
 				}
 				else
 				{
-					if (depthOfPlot == null) {
+					if (widthOfPlot == null) {
 						if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
 							pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
 					    }
 					    if (pl.getErrors().containsKey(SIDE_YARD_1_NOTDEFINED)) {
 					        pl.getErrors().remove(SIDE_YARD_1_NOTDEFINED);
 					    }
-					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
+					} else if (widthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) <= 0) {
 						side1val = BigDecimal.ZERO;
 					    side2val = BigDecimal.ZERO;
 						subRule = RULE_PART_TWO_TABLE_ONE;
-					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
-					    	&& depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
+					} else if (widthOfPlot.compareTo(BigDecimal.valueOf(4.5D)) > 0 
+					    	&& widthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) <= 0) {
 						side1val = SIDEVALUE_ONE;
 					    side2val = BigDecimal.ZERO;
 						subRule = RULE_PART_TWO_TABLE_ONE;
-					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
-					    	&& depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
+					} else if (widthOfPlot.compareTo(BigDecimal.valueOf(6.1D)) > 0 
+					    	&& widthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) <= 0) {
 						side1val = SIDEVALUE_ONE;
 					    side2val = SIDEVALUE_ONE;
 						subRule = RULE_PART_TWO_TABLE_ONE;
-					} else if (depthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
+					} else if (widthOfPlot.compareTo(BigDecimal.valueOf(9.15D)) > 0) {
 					    side1val = SIDEVALUE_ONEPOINTFIVE;
 					    side2val = SIDEVALUE_ONEPOINTFIVE;
 					    subRule = RULE_PART_TWO_TABLE_ONE;
